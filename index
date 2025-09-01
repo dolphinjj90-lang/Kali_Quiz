@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ITEC CTF — Kali Quiz</title>
+<style>
+  :root{
+    --bg1:#0f1724;
+    --bg2:#071428;
+    --accent:#00b39f;
+    --muted:#9aa4b2;
+    --card:#0b1220;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    background: radial-gradient(600px 400px at 10% 10%, rgba(0,179,159,0.06), transparent),
+                linear-gradient(120deg,var(--bg1), var(--bg2));
+    color:#e6eef6;
+    -webkit-font-smoothing:antialiased;
+    user-select:none; /* discourage copy */
+  }
+  .wrap{max-width:980px;margin:36px auto;padding:20px;}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .logo{
+    width:72px;height:72px;border-radius:10px;
+    background:linear-gradient(135deg,#021426,#032a3a);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.6), inset 0 -4px 14px rgba(0,0,0,0.3);
+    border:1px solid rgba(255,255,255,0.03)
+  }
+  .logo span{font-weight:700;color:var(--accent);font-size:20px;letter-spacing:1px}
+  h1{margin:0;font-size:20px}
+  p.subtitle{margin:2px 0 0;color:var(--muted);font-size:13px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005)); border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+  .meta{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  .pill{background:rgba(0,0,0,0.3);padding:8px 12px;border-radius:999px;color:var(--muted);font-size:13px;display:inline-flex;gap:8px;align-items:center}
+  .timer{font-weight:700;color:var(--accent);font-size:20px}
+  .progress{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;flex:1}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#007f7f);width:0%}
+  .question-area{margin-top:16px}
+  .qnum{color:var(--muted);font-size:13px;margin-bottom:8px}
+  .question{font-size:18px;margin:0 0 12px}
+  .options{display:grid;gap:8px}
+  .option{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .12s;display:flex;align-items:center;gap:12px}
+  .option input{display:none}
+  .option:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,0,0,0.5)}
+  .option.selected{background:rgba(0,179,159,0.08);border-color:rgba(0,179,159,0.25)}
+  .controls{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+  button{background:var(--accent);color:#052427;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+  button.ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
+  .small{font-size:13px;padding:8px 10px;border-radius:8px}
+  .result{margin-top:14px;padding:12px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));color:var(--muted)}
+  .flag{font-family:monospace;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;margin-top:12px;color:#a9ffef;word-break:break-all;}
+  footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+  @media (max-width:640px){
+    .logo{width:56px;height:56px}
+    h1{font-size:16px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><span>KALI</span></div>
+      <div>
+        <h1>ITEC CTF — Kali / BlackArch Quiz</h1>
+        <p class="subtitle">Medium difficulty — achieve <strong>37/40</strong> to unlock the flag. Timer: <strong>5:30</strong></p>
+      </div>
+    </header>
+
+    <div class="card" id="quizCard" aria-live="polite">
+      <div class="meta">
+        <div class="pill">Questions: <strong id="totalQ">40</strong></div>
+        <div class="pill">Need: <strong>37</strong></div>
+        <div class="pill">Score: <strong id="currentScore">0</strong></div>
+        <div class="pill timer" id="timer">05:30</div>
+        <div class="progress" aria-hidden="true"><i id="progBar"></i></div>
+      </div>
+
+      <div class="question-area" id="qa">
+        <!-- dynamic content -->
+      </div>
+
+      <div class="controls">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="prevBtn" class="small ghost">← Prev</button>
+          <button id="nextBtn" class="small ghost">Next →</button>
+          <button id="submitBtn" class="small">Submit</button>
+        </div>
+        <div>
+          <button id="restartBtn" class="small ghost">Restart</button>
+        </div>
+      </div>
+
+      <div id="result" class="result" style="display:none"></div>
+      <div id="flagBox" style="display:none">
+        <div class="flag" id="flagText">[flag will appear here]</div>
+      </div>
+    </div>
+
+    <footer>
+      🔨🤖🔧 Kali-themed quiz • Client-only demo — protections are deterrents, not guarantees.
+    </footer>
+  </div>
+
+<script>
+/*
+  ITEC CTF — Kali Quiz
+  - 40 questions
+  - Passing threshold: 37
+  - Timer: 330 seconds (5:30)
+  - Some keyboard/context restrictions (client-side only; not infallible).
+*/
+
+// ---------- Questions ----------
+const QUESTIONS = [
+  {q:"What package manager is native to Kali Linux (Debian-based)?", opts:["pacman","apt","dnf","emerge"], a:1},
+  {q:"Which user typically has full system privileges on Kali's default install?", opts:["guest","root","kali","user"], a:1},
+  {q:"Which tool is commonly used for wireless packet capturing on Linux?", opts:["nmap","airodump-ng","sqlmap","john"], a:1},
+  {q:"BlackArch is a distribution based on which Linux family?", opts:["Debian","Arch","Fedora","Gentoo"], a:1},
+  {q:"What does 'nmap' primarily do?", opts:["Password cracking","Network scanning","File forensics","Privilege escalation"], a:1},
+  {q:"Which command lists open network sockets on Linux?", opts:["ps -aux","netstat or ss","ls -la","chmod"], a:1},
+  {q:"Which tool is used for web vulnerability scanning in Kali?", opts:["nikto","gpg","tcpdump","rsync"], a:0},
+  {q:"Which kernel option helps in preventing execution of code from the stack?", opts:["ASLR","NX/DEP","SELinux","Auditd"], a:1},
+  {q:"Which file contains user account information on Linux?", opts:["/etc/shadow","/etc/passwd","/var/log/syslog","/home/users"], a:1},
+  {q:"What does 'sudo' allow a user to do?", opts:["Mount filesystems","Pipe outputs","Run commands as another user (usually root)","Edit network interfaces"], a:2},
+  {q:"What does 'aircrack-ng' primarily perform?", opts:["Wireless encryption cracking","Network discovery","Web scanning","Log analysis"], a:0},
+  {q:"Which of these is a good practice for ethical offensive security?", opts:["Attacking any target","Always have authorization","Using tools anonymously","Selling credentials"], a:1},
+  {q:"Which command shows current user identity in terminal?", opts:["whoami","id -u","who -r","users"], a:0},
+  {q:"What is the purpose of 'metasploit' framework (conceptually)?", opts:["Packet capture","Exploit development and testing","Static code analysis","File recovery"], a:1},
+  {q:"Which protocol is used by SSH?", opts:["UDP","TELNET","TCP","ICMP"], a:2},
+  {q:"What port does HTTPS default to?", opts:["80","21","443","25"], a:2},
+  {q:"Which of these is a password-cracking tool found in Kali?", opts:["john","gdb","iptables","tmux"], a:0},
+  {q:"What does 'chroot' do at a high level?", opts:["Change root directory for a process","Change user permissions","Restart the system","Create a new partition"], a:0},
+  {q:"Which file stores sudoers configuration?", opts:["/etc/sudoers","/etc/sudo.conf","/usr/sbin/sudoers","/var/sudo"], a:0},
+  {q:"Which tool is commonly used for packet capture on Linux CLI?", opts:["tcpdump","curl","iperf","strace"], a:0},
+  {q:"Which is an indicator of a privilege escalation vulnerability? (conceptual)", opts:["Readable config files owned by root","Writable root-owned binary by unprivileged user","Proper file permissions","SELinux enabled"], a:1},
+  {q:"What is a fundamental principle of responsible disclosure?", opts:["Publish exploit immediately","Notify vendor first and coordinate fixes","Sell to the highest bidder","Ignore vendor"], a:1},
+  {q:"Which command updates package lists on Debian-based systems?", opts:["apt update","pacman -Syu","dnf update","rpm --update"], a:0},
+  {q:"Which tool is used for enumerating SMB shares?", opts:["enum4linux","hydra","msfconsole","gpg"], a:0},
+  {q:"What does 'ss' replace from older toolset?", opts:["ifconfig","iwconfig","netstat","service"], a:2},
+  {q:"Which folder commonly stores system-wide configuration files?", opts:["/etc","/usr/bin","/var/tmp","/opt/local"], a:0},
+  {q:"Which command displays file permissions and ownership?", opts:["stat","chmod","chown","ls -l"], a:3},
+  {q:"What is 'ARP' used for on local networks?", opts:["Routing between ISPs","Resolving IP to MAC addresses","Encrypting traffic","Authenticating hosts"], a:1},
+  {q:"Which technique is used to avoid detection by changing payload characteristics?", opts:["Obfuscation","Backup","Hashing","Compilation"], a:0},
+  {q:"Which file commonly contains system logs on many Linux distros?", opts:["/var/log/syslog or /var/log/messages","/etc/logs","/home/logs","/usr/log"], a:0},
+  {q:"Which of the following is a kernel-level hardening mechanism?", opts:["AppArmor/SELinux","htop","nano","awk"], a:0},
+  {q:"Which of these is a network mapping technique (conceptual)?", opts:["Fingerprinting","Whitelisting","Sanitizing","Defragmenting"], a:0},
+  {q:"Which command would show current routes (routing table)?", opts:["route or ip route","arp -a","ss -t","ps aux"], a:0},
+  {q:"Which of these is the recommended way to run security scans in production?", opts:["During business hours without notice","Only with authorization and scheduling","Randomly at midnight","Without logging"], a:1},
+  {q:"What purpose does 'tcpdump -i' serve?", opts:["Install interface drivers","Specify the capture interface","Terminate connections","Update packet filters"], a:1},
+  {q:"Which of these is an advantage of using a virtual machine for testing offensive tools?", opts:["Cannot be detected","Isolation and snapshotting","Faster than bare metal always","No RAM usage"], a:1},
+  {q:"What is the default configuration management for password hashes on many Linux systems?", opts:["/etc/shadow stores password hashes","/etc/passwd stores cleartext passwords","Home dirs store hashes","Cron stores hashes"], a:0},
+  {q:"Which of these is a legal/ethical requirement before performing tests on a client's network?", opts:["Written authorization/consent","Oral permission is enough","Start testing and ask later","Assume consent if IP reachable"], a:0}
+];
+
+// ---------- Config ----------
+const PASSING_SCORE = 37;
+const TOTAL = QUESTIONS.length;
+const TIMER_SEC = 330; // 5 * 60 + 30 = 330 seconds
+
+// ---------- State ----------
+let answers = new Array(TOTAL).fill(null); // store selected index or null
+let cur = 0;
+let score = 0;
+let timer = TIMER_SEC;
+let timerInterval = null;
+
+// ---------- Flag (embedded as char codes to avoid blatant plain-text in source) ----------
+/*
+  NOTE: This is client-side — motivated users can still read it. This obfuscation is light by design.
+  The real flag is reconstructed only when the player passes.
+*/
+const FLAG_CODE = [
+  73,84,69,67,84,70,50,48,50,53,123,111,102,102,101,110,115,105,118,101,95,115,101,99,117,114,105,116,89,95,50,48,50,53,125
+];
+
+// ---------- DOM ----------
+const qa = document.getElementById('qa');
+const totalQ = document.getElementById('totalQ');
+const timerEl = document.getElementById('timer');
+const progBar = document.getElementById('progBar');
+const currentScoreEl = document.getElementById('currentScore');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const submitBtn = document.getElementById('submitBtn');
+const restartBtn = document.getElementById('restartBtn');
+const resultBox = document.getElementById('result');
+const flagBox = document.getElementById('flagBox');
+const flagText = document.getElementById('flagText');
+
+// ---------- Helpers ----------
+function pad(n){return n<10?"0"+n:n}
+function renderQuestion(index){
+  const item = QUESTIONS[index];
+  qa.innerHTML = `
+    <div class="qnum">Question ${index+1} of ${TOTAL}</div>
+    <h2 class="question">${escapeHtml(item.q)}</h2>
+    <div class="options" id="options">
+      ${item.opts.map((o,i)=>`
+        <label class="option ${answers[index]===i?'selected':''}" data-i="${i}">
+          <input type="radio" name="opt" ${answers[index]===i?'checked':''} value="${i}" />
+          <div style="flex:1">${String.fromCharCode(65+i)}. ${escapeHtml(o)}</div>
+        </label>`).join('')}
+    </div>
+  `;
+  // attach handlers to options
+  document.querySelectorAll('.option').forEach(el=>{
+    el.onclick = () => {
+      const i = Number(el.getAttribute('data-i'));
+      answers[index] = i;
+      // visually select
+      document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      updateScoreDisplay();
+    };
+  });
+  updateNavButtons();
+}
+
+// simple escaper
+function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// update nav/score
+function updateNavButtons(){
+  prevBtn.disabled = (cur===0);
+  nextBtn.disabled = (cur===TOTAL-1);
+}
+function updateScoreDisplay(){
+  // compute tentative score (count of correct answers among answered)
+  let sc = 0;
+  for(let i=0;i<TOTAL;i++){
+    if(answers[i] !== null && answers[i] === QUESTIONS[i].a) sc++;
+  }
+  currentScoreEl.textContent = sc;
+}
+
+// ---------- Timer ----------
+function startTimer(){
+  clearInterval(timerInterval);
+  timer = TIMER_SEC;
+  updateTimerDisplay();
+  timerInterval = setInterval(()=>{
+    timer--;
+    if(timer<=0){
+      clearInterval(timerInterval);
+      timer = 0;
+      updateTimerDisplay();
+      onTimeExpired();
+    } else {
+      updateTimerDisplay();
+    }
+  },1000);
+}
+function updateTimerDisplay(){
+  const mm = Math.floor(timer/60);
+  const ss = timer % 60;
+  timerEl.textContent = pad(mm)+":"+pad(ss);
+  const pct = 100 - Math.floor((timer / TIMER_SEC) * 100);
+  progBar.style.width = pct + "%";
+}
+
+// ---------- Timer expired ----------
+function onTimeExpired(){
+  alert("Time is up! The quiz will restart.");
+  restartQuiz();
+}
+
+// ---------- Navigation ----------
+prevBtn.onclick = ()=>{
+  if(cur>0){ cur--; renderQuestion(cur); }
+};
+nextBtn.onclick = ()=>{
+  if(cur<TOTAL-1){ cur++; renderQuestion(cur); }
+};
+
+// ---------- Submit ----------
+submitBtn.onclick = ()=>{
+  // require all questions answered? We'll allow partial, since it's realistic.
+  // Compute final score
+  let final = 0;
+  for(let i=0;i<TOTAL;i++) if(answers[i] === QUESTIONS[i].a) final++;
+  resultBox.style.display = 'block';
+  if(final >= PASSING_SCORE){
+    resultBox.innerHTML = `<strong>Score: ${final}/${TOTAL} — PASS</strong><br>Congratulations! Flag unlocked below.`;
+    revealFlag();
+  } else {
+    resultBox.innerHTML = `<strong>Score: ${final}/${TOTAL} — FAIL</strong><br>You needed ${PASSING_SCORE} to pass. Try again.`;
+    // Do not reveal flag
+    flagBox.style.display = 'none';
+  }
+};
+
+// ---------- Reveal flag ----------
+function revealFlag(){
+  // reconstruct string
+  const s = String.fromCharCode(...FLAG_CODE);
+  flagText.textContent = s;
+  flagBox.style.display = 'block';
+  // small visual emphasis
+  flagText.animate([{opacity:0.2, transform:'scale(0.98)'},{opacity:1, transform:'scale(1)'}], {duration:500, easing:'ease-out'});
+}
+
+// ---------- Restart ----------
+function restartQuiz(){
+  answers = new Array(TOTAL).fill(null);
+  cur = 0;
+  score = 0;
+  resultBox.style.display = 'none';
+  flagBox.style.display = 'none';
+  currentScoreEl.textContent = '0';
+  renderQuestion(cur);
+  startTimer();
+}
+
+// ---------- Initialize ----------
+totalQ.textContent = TOTAL;
+renderQuestion(0);
+startTimer();
+updateScoreDisplay();
+
+// ---------- Keyboard & Context Restrictions (client-side deterrents) ----------
+(function addDeterrents(){
+  // block right click
+  document.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+    // subtle hint
+    flashMessage("Right-click disabled for this quiz.");
+  });
+
+  // block some key combos
+  document.addEventListener('keydown', function(e){
+    // block F12
+    if(e.key === 'F12'){ e.preventDefault(); flashMessage("Dev tools disabled."); return false; }
+    // block Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U / Ctrl+S / Ctrl+L / Ctrl+Shift+C
+    if(e.ctrlKey && e.key.toLowerCase()==='l'){ e.preventDefault(); flashMessage("Ctrl+L disabled."); return false; }
+    if(e.ctrlKey && e.key.toLowerCase()==='u'){ e.preventDefault(); flashMessage("Ctrl+U disabled."); return false; }
+    if(e.ctrlKey && e.key.toLowerCase()==='s'){ e.preventDefault(); flashMessage("Ctrl+S disabled."); return false; }
+    if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='i'){ e.preventDefault(); flashMessage("Ctrl+Shift+I disabled."); return false; }
+    if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='j'){ e.preventDefault(); flashMessage("Ctrl+Shift+J disabled."); return false; }
+    if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='c'){ e.preventDefault(); flashMessage("Ctrl+Shift+C disabled."); return false; }
+  });
+
+  // small floating flash message (non-blocking)
+  const fm = document.createElement('div');
+  fm.style.position = 'fixed';
+  fm.style.right = '16px';
+  fm.style.bottom = '16px';
+  fm.style.padding = '8px 12px';
+  fm.style.background = 'rgba(0,0,0,0.6)';
+  fm.style.color = '#fff';
+  fm.style.borderRadius = '8px';
+  fm.style.fontSize = '13px';
+  fm.style.opacity = '0';
+  fm.style.transition = 'opacity .25s, transform .25s';
+  document.body.appendChild(fm);
+
+  let flashTO = null;
+  window.flashMessage = function(txt){
+    fm.textContent = txt;
+    fm.style.opacity = '1';
+    fm.style.transform = 'translateY(0)';
+    clearTimeout(flashTO);
+    flashTO = setTimeout(()=>{ fm.style.opacity='0'; fm.style.transform='translateY(8px)'; }, 1400);
+  };
+})();
+
+// ---------- Accessibility: ensure options selectable via keyboard and nav ----------
+document.addEventListener('keydown', function(e){
+  if(e.key === 'ArrowRight'){ if(cur<TOTAL-1){ cur++; renderQuestion(cur); } }
+  if(e.key === 'ArrowLeft'){ if(cur>0){ cur--; renderQuestion(cur); } }
+});
+
+// ---------- beforeunload warning to discourage accidental navigation ----------
+window.addEventListener('beforeunload', function(e){
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+// ---------- Small UX helpers ----------
+restartBtn.onclick = restartQuiz;
+
+// initial minor hint to user
+setTimeout(()=>flashMessage("Tip: Timer is 5:30. You need 37/40 to unlock the flag."),800);
+
+// END OF SCRIPT
+</script>
+</body>
+</html>
