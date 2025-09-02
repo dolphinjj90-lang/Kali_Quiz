@@ -44,14 +44,14 @@
       <div class="logo">KALI</div>
       <div>
         <h1>ITEC CTF — Kali / BlackArch Quiz</h1>
-        <p class="subtitle">40 questions • Need <strong>80%</strong> (32/40) to unlock the flag.</p>
+        <p class="subtitle">45 questions • Need <strong>60%</strong> (27/45) to unlock the flag.</p>
       </div>
     </header>
 
     <div class="card" id="quizCard">
       <div class="meta">
-        <div class="pill">Questions: <strong id="totalQ">40</strong></div>
-        <div class="pill">Need: <strong>32</strong></div>
+        <div class="pill">Questions: <strong id="totalQ">45</strong></div>
+        <div class="pill">Need: <strong>27</strong></div>
         <div class="pill">Score: <strong id="currentScore">0</strong></div>
         <div class="pill timer" id="timer">05:30</div>
         <div class="progress"><i id="progBar"></i></div>
@@ -81,10 +81,10 @@
 
 <script>
 /* --- Config --- */
-const PASSING_SCORE = 32; // 80%
+const PASSING_SCORE = 27; // 60%
 const TIMER_SEC = 330;
 
-/* --- 40 Questions (sample, cybersecurity + Linux basics) --- */
+/* --- 45 Questions --- */
 const QUESTIONS = [
   {q:"What package manager is used in Kali Linux?", opts:["pacman","apt","dnf"], a:1},
   {q:"BlackArch is based on which distro?", opts:["Debian","Arch","Fedora"], a:1},
@@ -125,7 +125,12 @@ const QUESTIONS = [
   {q:"chmod changes?", opts:["Permissions","Ports","Processes"], a:0},
   {q:"chown changes?", opts:["File ownership","Networking","Password"], a:0},
   {q:"ASLR provides?", opts:["Random memory layout","Port scanning","Logging"], a:0},
-  {q:"NX/DEP prevents?", opts:["Exec on stack","Root login","ICMP"], a:0}
+  {q:"NX/DEP prevents?", opts:["Exec on stack","Root login","ICMP"], a:0},
+  {q:"Default HTTP port?", opts:["80","22","143"], a:0},
+  {q:"Default MySQL port?", opts:["3306","1433","5432"], a:0},
+  {q:"Default PostgreSQL port?", opts:["5432","3306","8080"], a:0},
+  {q:"Tool to capture GUI sessions?", opts:["xspy","netstat","ps"], a:0},
+  {q:"Tool to crack Windows hashes?", opts:["pwdump","ls","echo"], a:0}
 ];
 
 /* --- State --- */
